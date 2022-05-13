@@ -61,6 +61,8 @@ def handle_proxy(body: dict):
     logger.info('检测到请求：{}, 方式：{}'.format(url, method))
 
     try:
+        if url is None or not url.startswith('http'):
+            raise Exception('url不合法')
         if method == 'GET':
             resp = requests.get(url=url, headers=headers, params=params, timeout=timeout, verify=False)
         else:

@@ -23,7 +23,7 @@ disable_warnings(exceptions.InsecureRequestWarning)
 logger = Logger(__name__).get_logger()
 
 
-def http_get(url, params=None, headers: dict = None, timeout=5):
+def http_get(url: str, params=None, headers: dict = None, timeout=5):
     """
     发送get请求
     :param url: URL地址
@@ -33,6 +33,8 @@ def http_get(url, params=None, headers: dict = None, timeout=5):
     :return:
     """
     try:
+        if url is None or not url.startswith('http'):
+            raise Exception('url不合法')
         parsed_url = urlparse(url)
         # 添加固定header
         headers['Referer'] = parsed_url.scheme + '://' + parsed_url.netloc
@@ -50,7 +52,7 @@ def http_get(url, params=None, headers: dict = None, timeout=5):
         raise e
 
 
-def http_post(url, data=None, headers: dict = None, timeout=5):
+def http_post(url: str, data=None, headers: dict = None, timeout=5):
     """
     发送post请求
     :param url: URL地址
@@ -60,6 +62,8 @@ def http_post(url, data=None, headers: dict = None, timeout=5):
     :return:
     """
     try:
+        if url is None or not url.startswith('http'):
+            raise Exception('url不合法')
         parsed_url = urlparse(url)
         # 添加固定header
         headers['Referer'] = parsed_url.scheme + '://' + parsed_url.netloc
@@ -84,7 +88,7 @@ def http_post(url, data=None, headers: dict = None, timeout=5):
         raise e
 
 
-def proxy_request(url, method: str = 'GET', params=None, data=None, headers: dict = None, timeout=5):
+def proxy_request(url: str, method: str = 'GET', params=None, data=None, headers: dict = None, timeout=5):
     """
     发送请求
     :param url:
