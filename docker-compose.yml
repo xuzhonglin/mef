@@ -1,0 +1,12 @@
+version: '3.9'
+services:
+  mef:
+    container_name: mef-v1.6
+    image: colinxu/mef:1.6.3
+    ports:
+      - 80:10282
+    environment:
+      - MEF_REDIS_HOST=10.1.2.184
+      - MEF_REDIS_DB=1
+      - MEF_DEBUG_MODE=false
+    restart: always

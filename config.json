@@ -1,0 +1,172 @@
+{
+    "cluster_name": "lgh-sh1",
+    "server_port": 10282,
+    "debug_mode": true,
+    "log_path": "logs/",
+    "log_level": "info",
+    "redis_host": "localhost",
+    "redis_port": 6379,
+    "redis_db": 0,
+    "redis_username": "",
+    "redis_password": "",
+    "request_limit_per_minute": 120,
+    "ocr_enabled": true,
+    "ocr_servers": [
+        "https://ocr.container.colinxu.cn/"
+    ],
+    "ocr_timeout": 5,
+    "ocr_max_retry": 3,
+    "proxy_enabled": false,
+    "proxy_servers": [
+        "https://proxy01-mef.herokuapp.com/",
+        "https://service-3v9zvubt-1252482261.sh.apigw.tencentcs.com/release/"
+    ],
+    "proxy_timeout": 5,
+    "proxy_max_retry": 3,
+    "proxy_rules": {
+        "dd520": {
+            "host": "https://bo.dd520.cc",
+            "headers": {
+                "Referer": "https://www.libvio.com"
+            },
+            "replacements": []
+        },
+        "libvio": {
+            "host": "https://www.libvio.com",
+            "headers": {
+                "Referer": "https://www.libvio.com"
+            },
+            "replacements": [
+                [
+                    "window.location.host",
+                    "'www.libvio.com'"
+                ],
+                [
+                    "parent.MacPlayer.PlayUrl = referer_token(parent.MacPlayer.PlayUrl);",
+                    ""
+                ],
+                [
+                    "parent.MacPlayer.PlayLinkNext",
+                    "''"
+                ],
+                [
+                    "parent.MacPlayer.PlayUrl",
+                    "'{line}'"
+                ]
+            ]
+        },
+        "libvio1": {
+            "host": "https://sh-data-s01.chinaeast2.cloudapp.chinacloudapi.cn",
+            "headers": {
+                "Referer": "https://www.libvio.com"
+            },
+            "replacements": []
+        },
+        "libvio2": {
+            "host": "https://cbsh-d0145678.chinaeast2.cloudapp.chinacloudapi.cn",
+            "headers": {
+                "Referer": "https://www.libvio.com"
+            },
+            "replacements": [
+                [
+                    "/Content",
+                    "/proxy/libvio2/Content"
+                ],
+                [
+                    "/Scripts",
+                    "/proxy/libvio2/Scripts"
+                ],
+                [
+                    "/ParsePlayer",
+                    "/proxy/libvio2/ParsePlayer"
+                ]
+            ]
+        },
+        "555dy1": {
+            "host": "https://zyz.021huaying.com",
+            "headers": {
+                "Referer": "https://www.5dy5.cc"
+            },
+            "replacements": [
+                [
+                    "reg:https:(.*).jpg",
+                    "https://pic.imgdb.cn/item/627dcce50947543129aa3d7f.jpg"
+                ],
+                [
+                    "<div class=\"logo\"",
+                    "<div class=\"logo\" style=\"display:none\""
+                ],
+                [
+                    "<div class=\"tips\"",
+                    "<div class=\"tips\" style=\"display:none\""
+                ]
+            ]
+        },
+        "555dy2": {
+            "host": "https://zyz.sdljwomen.com",
+            "headers": {
+                "Referer": "https://www.5dy5.cc"
+            },
+            "replacements": [
+                [
+                    "reg:https:(.*).jpg",
+                    "https://pic.imgdb.cn/item/627dcce50947543129aa3d7f.jpg"
+                ],
+                [
+                    "<div class=\"logo\"",
+                    "<div class=\"logo\" style=\"display:none\""
+                ],
+                [
+                    "<div class=\"tips\"",
+                    "<div class=\"tips\" style=\"display:none\""
+                ]
+            ]
+        },
+        "image": {
+            "host": "*",
+            "headers": {},
+            "replacements": []
+        }
+    },
+    "proxy_prefix": "proxy",
+    "player_servers": [
+        "https://okjx.cc/?url=",
+        "https://www.ckmov.vip/api.php?url=",
+        "https://sb.5gseo.net/?url=",
+        "https://jx.iztyy.com/svip/?url=",
+        "https://jx.iztyy.com/Bei/?url=",
+        "https://www.h8jx.com/jiexi.php?url=",
+        "https://jx.parwix.com:4433/player/?url=",
+        "https://svip.bljiex.cc/?v=",
+        "https://jx.aidouer.net/?url=",
+        "https://jx.xmflv.com/?url="
+    ],
+    "player_weights": [
+        4,
+        4,
+        5,
+        4,
+        1,
+        1,
+        4,
+        3,
+        3,
+        3
+    ],
+    "player_rules": [
+        "v.qq.com",
+        "www.iqiyi.com",
+        "v.youku.com",
+        "www.mgtv.com"
+    ],
+    "line_exclude_rules": [
+        "网盘",
+        "云盘",
+        "夸克",
+        "猜你喜欢",
+        "无尽",
+        "天空",
+        "快播",
+        "百度"
+    ]
+}
