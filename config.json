@@ -10,9 +10,9 @@
     "redis_username": "",
     "redis_password": "",
     "request_limit_per_minute": 200,
-    "admin_username": "colinxu",
-    "admin_password": "5060e7ad68b2e39b670ed583f87c9417",
-    "admin_secret": "gksOZTUwWYVfIhAL",
+    "admin_username": "admin",
+    "admin_password": "",
+    "admin_secret": "",
     "ocr_enabled": true,
     "ocr_servers": [
         "https://ocr.container.colinxu.cn/"
