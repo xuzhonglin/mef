@@ -8,46 +8,39 @@
 @Desc     : web服务器
 """
 import json
-from functools import wraps
 
-from flask import request, Response, send_from_directory, redirect
-from flask_basicauth import BasicAuth
+from flask import request, Response, send_from_directory
 
 from service import MefService, ProxyService
 from constant.config import SERVER_PORT, DEBUG_MODE
+from util.auth import auth_login
 
 app = ProxyService(__name__)
-app.config['BASIC_AUTH_USERNAME'] = 'colinxu'
-app.config['BASIC_AUTH_PASSWORD'] = 'colin2why**'
 
 mef_service = MefService('source.json')
-basic_auth = BasicAuth(app)
 
 
-def authorized_only(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # request_token = request.headers.get('Token')
-        # if _is_blank(request_token):
-        #     return redirect('/')
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
+@app.route('/search', methods=['GET'])
+@app.route('/detail', methods=['GET'])
+@app.route('/admin/login', methods=['GET'])
 def index():
     """
     主页
     :return:
     """
-    return app.send_static_file('index.html')
+    return send_from_directory('static', 'index.html')
 
 
-@app.route('/admin', methods=['GET'])
-@basic_auth.required
-def source_manage():
-    return redirect('/#/source/index')
+@app.route('/admin/source/list', methods=['GET'])
+@app.route('/admin/source/edit', methods=['GET'])
+@app.authorize_required
+def admin():
+    """
+    主页
+    :return:
+    """
+    return send_from_directory('static', 'index.html')
 
 
 @app.route('/<path:path>')
@@ -55,9 +48,27 @@ def static_route(path):
     return send_from_directory('static', path)
 
 
+@app.route('/api/login', methods=['POST'])
+def admin_login():
+    username = _parse_params('username')
+    password = _parse_params('password')
+    totp_code = _parse_params('totp_code')
+    if _is_blank(username) or _is_blank(password) or _is_blank(totp_code):
+        return _response(msg='用户名或密码或动态码不能为空', code=403)
+
+    msg, auth_result = auth_login(username, password, totp_code)
+    if not auth_result:
+        return _response(msg=msg, code=403)
+
+    cookie = {
+        'mef_token': (msg, 60 * 60 * 7)
+    }
+
+    return _response('登陆成功', cookie=cookie)
+
+
 @app.route('/api/source/<string:source_id>', methods=['GET'])
-@authorized_only
-@basic_auth.required
+@app.authorize_required
 def get_source(source_id):
     """
     获取数据源列表
@@ -68,8 +79,7 @@ def get_source(source_id):
 
 
 @app.route('/api/source/save', methods=['POST'])
-@authorized_only
-@basic_auth.required
+@app.authorize_required
 def save_source():
     """
     保存数据源
@@ -83,8 +93,7 @@ def save_source():
 
 
 @app.route('/api/source/import', methods=['POST'])
-@authorized_only
-@basic_auth.required
+@app.authorize_required
 def import_source():
     """
     导入数据源
@@ -111,8 +120,7 @@ def import_source():
 
 
 @app.route('/api/source/verify', methods=['POST'])
-@authorized_only
-@basic_auth.required
+@app.authorize_required
 def verify_source():
     """
     校验数据源
@@ -123,8 +131,7 @@ def verify_source():
 
 
 @app.route('/api/test/search', methods=['POST'])
-@authorized_only
-@basic_auth.required
+@app.authorize_required
 def test_search():
     source = _parse_params('source')
     keyword = _parse_params('keyword')
@@ -134,8 +141,7 @@ def test_search():
 
 
 @app.route('/api/test/detail', methods=['POST'])
-@authorized_only
-@basic_auth.required
+@app.authorize_required
 def test_detail():
     """
     测试详情
@@ -147,8 +153,7 @@ def test_detail():
 
 
 @app.route('/api/test/play', methods=['POST'])
-@authorized_only
-@basic_auth.required
+@app.authorize_required
 def test_play():
     source = _parse_params('source')
     url = _parse_params('url')
@@ -200,7 +205,7 @@ def _is_blank(s):
         return len(s) == 0
 
 
-def _response(data=None, msg: str = 'success', code: int = 200):
+def _response(data=None, msg: str = 'success', code: int = 200, cookie: dict = None):
     ret = {
         'code': code,
         'msg': msg
@@ -209,6 +214,11 @@ def _response(data=None, msg: str = 'success', code: int = 200):
         ret['data'] = data
 
     response = Response(json.dumps(ret), mimetype='application/json')
+
+    if cookie is not None:
+        for k, v in cookie.items():
+            value, expire = v
+            response.set_cookie(k, value, max_age=expire)
 
     return response, 200
 

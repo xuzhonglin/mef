@@ -55,8 +55,8 @@
 
 <script lang="ts" setup>
 
-import SourceHeader from "../common/SourceHeader.vue";
-import Api from "../../api";
+import SourceHeader from "../../common/SourceHeader.vue";
+import Api from "../../../api";
 import {onMounted, ref} from "vue";
 import {useRouter} from "vue-router";
 import {ElMessage} from "element-plus/es";
@@ -77,11 +77,11 @@ const getSourceList = async () => {
 };
 
 const editSource = (row: any) => {
-  router.push({name: 'sourceEdit', query: {id: row.sourceId}});
+  router.push({name: 'adminSourceEdit', query: {id: row.sourceId}});
 };
 
 const createSource = () => {
-  router.push('edit');
+  router.push({name: 'adminSourceEdit'});
 }
 
 const importSource = () => {

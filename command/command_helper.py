@@ -26,6 +26,8 @@ class CommandHelper(object):
         :param pattern: 指令
         :return: 结果
         """
+        if pattern is None or pattern == "":
+            return None
         logger.debug("执行命令：{}".format(pattern))
         command_array = self._parse_command(pattern)
         return self._execute_command(source, command_array)
@@ -37,7 +39,6 @@ class CommandHelper(object):
         :return: 命令列表
         """
         if pattern is None or pattern == "":
-            logger.error("自定义选择器有误 {}".format(pattern))
             return None
 
         extent_func = None

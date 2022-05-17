@@ -6,7 +6,7 @@ import '@vue/runtime-core'
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     Detail: typeof import('./components/page/Detail.vue')['default']
-    Edit: typeof import('./components/source/Edit.vue')['default']
+    Edit: typeof import('./components/admin/source/Edit.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCol: typeof import('element-plus/es')['ElCol']
     ElContainer: typeof import('element-plus/es')['ElContainer']
@@ -28,6 +28,7 @@ declare module '@vue/runtime-core' {
     ElTag: typeof import('element-plus/es')['ElTag']
     Index: typeof import('./components/page/Index.vue')['default']
     Loading: typeof import('element-plus/es')['ElLoadingDirective']
+    Login: typeof import('./components/admin/Login.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Search: typeof import('./components/page/Search.vue')['default']

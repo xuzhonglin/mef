@@ -263,13 +263,12 @@
 
 <script lang="ts" setup>
 
-import SourceHeader from "../common/SourceHeader.vue";
-import SourceDetail from "../common/SourceDetail.vue";
+import SourceHeader from "../../common/SourceHeader.vue";
 import {onMounted, reactive, ref} from "vue";
-import {Delete, Plus, Search, QuestionFilled, Picture} from "@element-plus/icons-vue";
-import Api from "../../api";
+import {Delete, Plus, Search} from "@element-plus/icons-vue";
+import Api from "../../../api";
 import {useRouter} from "vue-router";
-// import {ElMessage} from "element-plus";
+import {ElMessage} from "element-plus";
 
 
 const router = useRouter()
@@ -347,7 +346,7 @@ const deleteHeaderItem = (target: string, index: number, obj: any) => {
 }
 
 const backIndex = () => {
-  router.push('index')
+  router.push({name: 'adminSourceList'})
 }
 
 const openUrl = (url: string) => {

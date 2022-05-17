@@ -83,7 +83,15 @@ const fetchDetail = async () => {
 const epChanged = (name: any, index: number, ep: any) => {
   playerLoading.value = true;
   let line = Base64.encode(name);
-  window.location.href = `/#/detail?id=${sourceId.value}&url=${detailUrl.value}&line=${line}&ep=${index + 1}`;
+  router.push({
+    path: '/detail',
+    query: {
+      id: sourceId.value,
+      url: detailUrl.value,
+      line: line,
+      ep: index + 1
+    }
+  })
   activeEp.value = [name, index];
   let refresh = altKeyPressed.value;
   getPlay(sourceId.value, ep.url, refresh);
@@ -217,7 +225,8 @@ $player-height: calc(#{$player-width} / 16 * 9);
       //height: calc(#{$player-height} - 20px - 55px);
 
       .ep {
-        width: 4rem;
+        //width: 4rem;
+        min-width: 4rem;
         height: 1.5rem;
         line-height: 1.5rem;
         font-size: 0.7rem;

@@ -7,7 +7,6 @@
 @File     : proxy_service.py
 @Desc     : 代理服务
 """
-import datetime
 import logging
 import re
 import time
@@ -15,12 +14,14 @@ import uuid
 
 import requests
 
-from flask import Flask, request, Response
+from flask import Flask, request, Response, redirect
 from flask_cors import CORS
 from urllib.parse import urlparse
+from functools import wraps
 
 from util.logging import Logger
 from util.redis import get_redis, parse_key
+from util.auth import auth_jwt
 from constant.config import PROXY_RULES, REQUEST_LIMIT_PER_MINUTE, DEBUG_MODE
 
 logger = Logger(__name__).get_logger()
@@ -67,20 +68,26 @@ class ProxyService(Flask):
         反向代理处理
         :return:
         """
-        # if request.url_rule is not None:
-        #     url_rule = request.url_rule
-        #     endpoint = url_rule.endpoint
-        #     return self.view_functions[endpoint](**request.view_args, **request.args, **request.form)
-        #
-        # path = request.path
-        # if path.startswith("/proxy"):
-        #     self.logger.info("ProxyService reverse proxy handle")
-        #     return self._reverse_proxy_handle()
 
         request_id = request.cookies.get('mef_request_id')
 
-        # 图片请求不做限制
-        if not request.path.startswith('/proxy/image') and request_id is not None:
+        ignore_suffix = ['.js', '.css', '.jpg', '.png', '.ico']
+        ignore_prefix = ['/proxy/image', '/admin/login']
+
+        ignore = False
+
+        for suffix in ignore_suffix:
+            if request.path.endswith(suffix):
+                ignore = True
+                break
+
+        for prefix in ignore_prefix:
+            if not ignore and request.path.startswith(prefix):
+                ignore = True
+                break
+
+        # 图片和静态资源请求不做限制
+        if not ignore and request_id is not None:
             cache_name = parse_key('REQUEST', request_id)
             cache_key = request.path
             last_request_time = Redis.hget(cache_name, cache_key)
@@ -92,6 +99,7 @@ class ProxyService(Flask):
                 request_time = time.time()
                 # 判断是否超过限制
                 if request_time - last_request_time <= 60 / REQUEST_LIMIT_PER_MINUTE:
+                    logger.info("请求过于频繁，请稍后再试")
                     return Response(status=403)
                 Redis.hset(cache_name, cache_key, request_time)
 
@@ -106,7 +114,7 @@ class ProxyService(Flask):
         响应前处理
         :return:
         """
-        if 'mef_request_id' not in request.cookies:
+        if 'mef_request_id' not in request.cookies and request.method != 'OPTIONS':
             request_id = str(uuid.uuid4()).replace('-', '')
             response.set_cookie('mef_request_id', request_id, max_age=60 * 60 * 24 * 7)
         return response
@@ -120,17 +128,24 @@ class ProxyService(Flask):
         path_array = request.path.split("/")
         target = path_array[2]
 
+        image_proxy = False
+
         if target in PROXY_RULES:
             target_config = PROXY_RULES[target]
             url = '/' + '/'.join(path_array[3:]) + '?' + request.query_string.decode()
             host = target_config['host']
             if host == '*':
+                # 处理图片代理
                 url = request.args.get('url')
+                if not url or not url.startswith('http'):
+                    url = request.path.replace('/proxy/image/', '')
+                    url = url[:-4] + url[-4:].replace('.img', '')
                 host = urlparse(url).scheme + '://' + urlparse(url).netloc
                 headers = self._unpack_headers(request.headers)
                 headers.update(target_config["headers"])
                 headers["Host"] = urlparse(host).netloc
                 headers["Referer"] = host
+                image_proxy = True
             else:
                 url = host + url
                 headers = self._unpack_headers(request.headers)
@@ -143,6 +158,8 @@ class ProxyService(Flask):
 
             response = requests.request(method=request.method, url=url, headers=headers, data=request.form,
                                         params=request.args, verify=False, timeout=5)
+            if image_proxy and response.status_code != 200:
+                return redirect('/default.jpg')
             response_headers = {}
             content_type = response.headers["Content-Type"] if "Content-Type" in response.headers else ""
             if content_type != "":
@@ -166,6 +183,21 @@ class ProxyService(Flask):
                 else:
                     response_text = response_text.replace(old, new)
             return response_text, response.status_code, response_headers
+
+    def authorize_required(self, f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            request_token = request.cookies.get('mef_token')
+            if request_token is None or request_token == '':
+                return redirect('/admin/login?redirect=' + request.full_path)
+
+            auth_result = auth_jwt(request_token)
+            if not auth_result:
+                return redirect('/admin/login?redirect=' + request.full_path)
+
+            return f(*args, **kwargs)
+
+        return decorated_function
 
     def _unpack_headers(self, headers):
         """

@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <a class="logo" href=".">
+    <a class="logo" href="/admin/source/list">
       <img src="/index_logo.png"/>
       <div class="title">{{ title }}</div>
     </a>

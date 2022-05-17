@@ -1,4 +1,6 @@
 import http from "./http";
+// @ts-ignore
+import md5 from "js-md5";
 
 const API = {
 
@@ -53,7 +55,11 @@ const API = {
 
     searchHint(keyword: string) {
         return http.get(`/search/hint?k=${keyword}`)
-    }
+    },
+
+    login(username: string, password: string, totp_code: string) {
+        return http.post('/login', {username: username, password: md5(password), totp_code: totp_code})
+    },
 }
 
 export default API

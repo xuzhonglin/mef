@@ -2,7 +2,9 @@
 
   <div class="search-result">
     <div class="search-header">
-      <img src="/search_logo.png" class="search-logo" alt="mef"/>
+      <a href="/">
+        <img src="/search_logo.png" class="search-logo" alt="mef"/>
+      </a>
       <input class="search-box" v-model="keyword" placeholder="搜你想搜" @keyup="doSearch"/>
       <div class="search-button" @click="clickSearch">搜索</div>
     </div>
@@ -44,7 +46,6 @@ const BASE_URL = import.meta.env.VITE_APP_BASE_URL
 const search = async () => {
   resultLoading.value = true;
   let refresh = router.currentRoute.value.query.refresh;
-  console.log('11111', refresh);
   const response = await Api.search(keyword.value, refresh);
   let resultData = response.data;
   let hasResultData: any[] = []
@@ -74,25 +75,16 @@ const clickSearch = () => {
 }
 
 const goToDetail = (id: any, item: any) => {
-  // console.log(id, item)
   let url = Base64.encode(item.url)
-  // router.push(`/detail?id=${id}&url=${url}`)
-  // console.log(router.currentRoute.value)
   sessionStorage.setItem(`DETAIL_${url}`, JSON.stringify(item))
-  window.open(`#/detail?id=${id}&url=${url}`, '_blank')
+  window.open(`/detail?id=${id}&url=${url}`, '_blank')
 }
 
 const getImage = (url: string) => {
   if (!url) {
     return ''
   }
-  return `${BASE_URL}/proxy/image?url=${url}`
-
-  // if (url.indexOf('douban') >= 0 || url.indexOf('gtimg') >= 0) {
-  //   return `${BASE_URL}/proxy/image?url=${url}`
-  // } else {
-  //   return url
-  // }
+  return `${BASE_URL}/proxy/image/${url}.img`
 }
 
 onMounted(() => {

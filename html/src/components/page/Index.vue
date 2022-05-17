@@ -1,7 +1,9 @@
 <template>
   <div class="search">
-    <img src="/search_logo.png" class="search-logo" alt="mef"/>
-    <div style="display: flex;flex-direction: row;margin-top: 2rem">
+    <a href="/">
+      <img src="/search_logo.png" class="search-logo" alt="mef"/>
+    </a>
+    <div style="display: flex;flex-direction: row;margin-top: 2.5rem">
       <input class="search-box" v-model="keyword" placeholder="搜你想搜" @keyup="search"/>
       <div class="search-button" @click="clickSearch">搜索</div>
     </div>
@@ -38,8 +40,8 @@ const clickSearch = () => {
   flex-wrap: nowrap;
   align-items: center;
   //justify-content: center;
-  height: 100vh;
-  padding-top: 20vh;
+  height: 75vh;
+  padding-top: 25vh;
   background-color: #ffffff;
 
   .search-logo {
