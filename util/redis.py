@@ -12,7 +12,8 @@ import json
 
 from hashlib import md5
 from util.logging import Logger
-from constant.config import REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_DB, REDIS_USERNAME
+from constant.config import REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_DB, REDIS_USERNAME, RUN_ROLE, CONFIG_KEY, \
+    GLOBAL_CONFIG
 
 logger = Logger(__name__).get_logger()
 
@@ -22,6 +23,9 @@ try:
     REDIS.ping()
     logger.info(
         "Redis连接成功,redis://{}:{}@{}:{}/{}".format(REDIS_USERNAME, REDIS_PASSWORD, REDIS_HOST, REDIS_PORT, REDIS_DB))
+    if RUN_ROLE == "master":
+        logger.info("当前主机为主节点,已经自动设置配置缓存")
+        REDIS.set(CONFIG_KEY, json.dumps(GLOBAL_CONFIG))
 except Exception as e:
     REDIS = None
     logger.error(

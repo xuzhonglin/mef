@@ -116,7 +116,7 @@ class ProxyService(Flask):
         """
         if 'mef_request_id' not in request.cookies and request.method != 'OPTIONS':
             request_id = str(uuid.uuid4()).replace('-', '')
-            response.set_cookie('mef_request_id', request_id, max_age=60 * 60 * 24 * 7)
+            response.set_cookie('mef_request_id', request_id, expires=time.time() + 60 * 60 * 24 * 7)
         return response
 
     def _reverse_proxy_handle(self):

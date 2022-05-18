@@ -9,6 +9,7 @@
 """
 import json
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 
 from model.source import Source
@@ -18,6 +19,7 @@ from parser.play_parser import PlayParser
 from util.common import parse_url, is_valid_json
 from util.logging import Logger
 from constant.source_keys import SourceKeys
+from constant.config import RUN_ROLE, SOURCE_KEY, MESSAGE_KEY, SERVER_NAME
 from util.redis import get_redis, parse_key, parse_value
 
 MAX_WORKERS = 10
@@ -67,7 +69,7 @@ class MefService:
             return True
         return False
 
-    def save_source(self, source: dict):
+    def save_source(self, source: dict, skip_message: bool = False):
         """
         保存资源
         :param source:
@@ -87,9 +89,23 @@ class MefService:
                 self.origin_source_list.append(source_item)
             logger.info('资源列表更新成功')
 
-            with open(self.path, 'w') as f:
-                json.dump(self.origin_source_list, f, indent=4, ensure_ascii=False)
-            logger.info('保存资源成功')
+            Redis.set(SOURCE_KEY, parse_value(self.origin_source_list))
+            logger.info('资源更新 Redis 成功')
+
+            if RUN_ROLE == 'master':
+                with open(self.path, 'w') as f:
+                    json.dump(self.origin_source_list, f, indent=4, ensure_ascii=False)
+                logger.info('保存本地资源成功')
+
+            if not skip_message:
+                logger.info('发送 Source 更新消息')
+                message = {
+                    'message_id': uuid.uuid4().hex,
+                    'message_content': 'source_update',
+                    'message_from': SERVER_NAME
+                }
+                recv_cnt = Redis.publish(MESSAGE_KEY, json.dumps(message))
+                logger.info('发送 Source 更新消息成功, 接收者 {} 个'.format(recv_cnt))
 
             self.result_parsers = []
 
@@ -217,9 +233,18 @@ class MefService:
         return self._play(source, url, False)
 
     def _load_source(self):
-        logger.info('加载配置文件 {}'.format(self.path))
-        with open(self.path, 'r') as f:
-            config_list = json.load(f)
+        config_list = []
+        if RUN_ROLE == 'master':
+            logger.info('加载配置文件 {}'.format(self.path))
+            with open(self.path, 'r') as f:
+                config_list = json.load(f)
+            Redis.set(SOURCE_KEY, parse_value(config_list))
+            logger.info('已经将 Source 设置到 Redis')
+        elif RUN_ROLE == 'slave':
+            temp_source = Redis.get(SOURCE_KEY)
+            if temp_source:
+                config_list = json.loads(temp_source)
+                logger.info('从 REDIS 加载 Source 文件 {}'.format(self.path))
         result_parsers = []
         for config_item in config_list:
             self.origin_source_list.append(config_item)
@@ -228,7 +253,67 @@ class MefService:
             if source.source_enable:
                 result_parsers.append(ResultParser(source))
         logger.info('加载配置文件完成, 总计 {} 个来源'.format(len(result_parsers)))
+
+        # 注册消息队列
+        message_sub = Redis.pubsub()
+        message_sub.subscribe(**{MESSAGE_KEY: self._on_message})
+        message_sub.run_in_thread(sleep_time=0.1, daemon=True)
+
+        logger.info('注册 Source 更新消息队列成功 {}'.format(MESSAGE_KEY))
+
         return result_parsers
+
+    def _on_message(self, message: dict):
+        """
+        消息队列回调
+        :param message: 消息
+        :return:
+        """
+
+        # message = message.decode()
+
+        content = message['data'].decode()
+        content = json.loads(content)
+        logger.info('收到消息队列消息 {}'.format(content))
+        message_id = content['message_id']
+        message_content = content['message_content']
+        message_from = content['message_from']
+
+        if message_from == SERVER_NAME:
+            logger.info('消息来自相同机器 {}，跳过'.format(message_content))
+            return
+
+        message_key = parse_key('MSG', message_id, message_from)
+        lock_result = Redis.setnx(message_key, message_content)
+
+        if not lock_result:
+            logger.info('消息 {} 已经处理过'.format(message_key))
+            return
+
+        logger.info('消息队列消息 {} 成功设置锁'.format(message_key))
+        Redis.expire(message_key, 30)
+
+        if message_content == 'source_update':
+            logger.info('收到 Source 更新消息')
+            cache_source_list = Redis.get(SOURCE_KEY)
+            if cache_source_list:
+                cache_source_list = json.loads(cache_source_list)
+
+                if RUN_ROLE == 'master':
+                    with open(self.path, 'w') as f:
+                        json.dump(cache_source_list, f, indent=4, ensure_ascii=False)
+                    logger.info('更新本地资源成功')
+
+                self.result_parsers = []
+
+                for source_item in cache_source_list:
+                    self.origin_source_list.append(source_item)
+                    source = Source(source_item)
+                    self.origin_source_map[source.source_id] = source_item
+                    if source.source_enable:
+                        self.result_parsers.append(ResultParser(source))
+                logger.info('重新加载配置文件完成, 总计 {} 个来源'.format(len(self.result_parsers)))
+            logger.info('Source 更新成功')
 
     def search(self, keyword: str, refresh: bool = False):
         """

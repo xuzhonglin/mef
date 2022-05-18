@@ -1,5 +1,5 @@
 {
-    "cluster_name": "lgh-sh1",
+    "server_name": "master-01",
     "server_port": 10282,
     "debug_mode": true,
     "log_path": "logs/",

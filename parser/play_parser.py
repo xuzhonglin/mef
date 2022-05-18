@@ -12,7 +12,7 @@ import json
 import random
 
 from bs4 import BeautifulSoup
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse, urlunparse
 
 from model.source import Source
 from util.common import is_empty, is_valid_json
@@ -109,6 +109,11 @@ class PlayParser(object):
                         break
 
         logger.info('解析播放页面成功，播放地址：{}'.format(player_url))
+
+        # urlparse_result = urlparse(player_url)
+        # query = '{}={}&{}'.format('referer', self.s.source_home_page, urlparse_result.query)
+        # player_url = urlparse_result.scheme + '://' + urlparse_result.netloc + urlparse_result.path + '?' + query
+        # logger.info(query)
 
         return {
             'title': title,

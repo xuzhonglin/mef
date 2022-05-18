@@ -8,6 +8,7 @@
 @Desc     : web服务器
 """
 import json
+import time
 
 from flask import request, Response, send_from_directory
 
@@ -218,7 +219,7 @@ def _response(data=None, msg: str = 'success', code: int = 200, cookie: dict = N
     if cookie is not None:
         for k, v in cookie.items():
             value, expire = v
-            response.set_cookie(k, value, max_age=expire)
+            response.set_cookie(k, value, expires=time.time() + expire)
 
     return response, 200
 
