@@ -160,19 +160,28 @@ class ProxyService(Flask):
                                         params=request.args, verify=False, timeout=5)
             if image_proxy and response.status_code != 200:
                 return redirect('/default.jpg')
-            response_headers = {}
+            response_headers = self._unpack_headers(response.headers)
+
+            response_headers.pop('Server', None)
+            response_headers.pop('Date', None)
+            response_headers.pop('Content-Length', None)
+            response_headers.pop('Content-Encoding', None)
+            response_headers.pop('Transfer-Encoding', None)
+            response_headers.pop('Connection', None)
+
             content_type = response.headers["Content-Type"] if "Content-Type" in response.headers else ""
-            if content_type != "":
-                response_headers["Content-Type"] = content_type
+            # if content_type != "":
+            #     response_headers["Content-Type"] = content_type
             replacements = target_config["replacements"]
-            need_replace = len(replacements) > 0 and 'text' in content_type
+            need_replace = len(replacements) > 0 and 'text/html' in content_type
 
             # 解决乱码问题
-            if 'Content-Encoding' in response.headers:
+            if 'Content-Encoding' in response.headers and response.headers['Content-Encoding'] != 'gzip':
                 response_headers['Content-Encoding'] = response.headers['Content-Encoding']
 
             if not need_replace:
                 return response.content, response.status_code, response_headers
+
             response_text = response.content.decode(encoding="utf-8")
             for replacement in replacements:
                 old = replacement[0]

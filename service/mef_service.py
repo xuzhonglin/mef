@@ -269,9 +269,6 @@ class MefService:
         :param message: 消息
         :return:
         """
-
-        # message = message.decode()
-
         content = message['data'].decode()
         content = json.loads(content)
         logger.info('收到消息队列消息 {}'.format(content))
@@ -390,7 +387,7 @@ class MefService:
 
             if use_cache and 'result' in result and result['result']:
                 logger.info('解析搜索结果已缓存 {}'.format(cache_key))
-                Redis.set(cache_key, parse_value(result), ex=60 * 20)
+                Redis.set(cache_key, parse_value(result), ex=60 * 60 * 6)
 
             return result
         except Exception as e:
@@ -441,7 +438,7 @@ class MefService:
 
         if use_cache and 'lineList' in result and result['lineList']:
             logger.info('解析详情已经缓存 {}'.format(cache_key))
-            Redis.set(cache_key, parse_value(result), ex=60 * 30)
+            Redis.set(cache_key, parse_value(result), ex=60 * 60 * 6)
 
         logger.info('资源 [{}] 解析详情结果：{}'.format(source_id, result))
         return result
@@ -487,7 +484,7 @@ class MefService:
 
         if use_cache and 'playerUrl' in result and result['playerUrl']:
             logger.info('解析播放地址已经缓存 {}'.format(cache_key))
-            Redis.set(cache_key, parse_value(result), ex=60 * 40)
+            Redis.set(cache_key, parse_value(result), ex=60 * 60 * 6)
 
         logger.info('资源 [{}]，地址 {} 解析播放结果：{}'.format(source_id, play_url, result))
         return result

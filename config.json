@@ -125,6 +125,26 @@
                 ]
             ]
         },
+        "zxzj1": {
+            "host": "https://zx2.punakong.com:8172",
+            "headers": {
+                "Referer": "https://www.zxzjtv.com"
+            },
+            "replacements": [
+                [
+                    "/Content",
+                    "/proxy/zxzj1/Content"
+                ],
+                [
+                    "/Scripts",
+                    "/proxy/zxzj1/Scripts"
+                ],
+                [
+                    "/ParsePlayer",
+                    "/proxy/zxzj1/ParsePlayer"
+                ]
+            ]
+        },
         "image": {
             "host": "*",
             "headers": {},
