@@ -166,6 +166,11 @@ class ProxyService(Flask):
                 response_headers["Content-Type"] = content_type
             replacements = target_config["replacements"]
             need_replace = len(replacements) > 0 and 'text' in content_type
+
+            # 解决乱码问题
+            if 'Content-Encoding' in response.headers:
+                response_headers['Content-Encoding'] = response.headers['Content-Encoding']
+
             if not need_replace:
                 return response.content, response.status_code, response_headers
             response_text = response.content.decode(encoding="utf-8")
