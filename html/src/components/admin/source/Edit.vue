@@ -264,7 +264,7 @@
 <script lang="ts" setup>
 
 import SourceHeader from "../../common/SourceHeader.vue";
-import {onMounted, reactive, ref} from "vue";
+import {onMounted, reactive, ref, watch} from "vue";
 import {Delete, Plus, Search} from "@element-plus/icons-vue";
 import Api from "../../../api";
 import {useRouter} from "vue-router";
@@ -466,6 +466,15 @@ window.addEventListener("resize", () => {
 onMounted(() => {
   let source_id: any = router.currentRoute.value.query.id
   getSource(source_id)
+})
+
+watch(router.currentRoute, (newValue, oldValue) => {
+  if (!newValue || newValue.name != 'adminSourceEdit') return
+  let idTemp = newValue.id ? newValue.query.id : undefined
+  if (!idTemp) return
+  console.log('watch 已触发', idTemp)
+  keyword.value = idTemp
+  getSource(idTemp)
 })
 </script>
 

@@ -31,7 +31,7 @@ except Exception as e:
     logger.error(
         'redis连接失败，请检查配置！redis://{}:{}@{}:{}/{}'.format(REDIS_USERNAME, REDIS_PASSWORD, REDIS_HOST, REDIS_PORT,
                                                         REDIS_DB))
-    raise e
+    exit(-1)
 
 
 def get_redis():

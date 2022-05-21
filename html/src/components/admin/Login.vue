@@ -23,6 +23,10 @@ const totpCode = ref('')
 const router = useRouter()
 
 const login = async () => {
+  if (!username.value || !password.value || !totpCode.value) {
+    ElMessage.error('请检查输入')
+    return
+  }
   const res = await Api.login(username.value, password.value, totpCode.value)
   if (res && res.code === 200) {
     ElMessage.success('登录成功')
@@ -41,6 +45,14 @@ const login = async () => {
   } else {
     ElMessage.error(res.msg)
   }
+}
+
+document.onkeyup = (e: any) => {
+  // console.log(e)
+  if (e.keyCode !== 13) {
+    return
+  }
+  login()
 }
 
 </script>

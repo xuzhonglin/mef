@@ -32,7 +32,7 @@
 <script lang="ts" setup>
 
 import {useRouter} from "vue-router";
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import {Base64} from "js-base64";
 import Api from "../../api";
 
@@ -90,6 +90,15 @@ const getImage = (url: string) => {
 onMounted(() => {
   // console.log('mounted')
   // search()
+})
+
+watch(router.currentRoute, (newValue, oldValue) => {
+  if (!newValue || newValue.name != 'search') return
+  let keywordTemp = newValue.query ? newValue.query.keyword : undefined
+  if (!keywordTemp) return
+  console.log('watch 已触发', keywordTemp)
+  keyword.value = keywordTemp
+  search()
 })
 
 search()
