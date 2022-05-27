@@ -36,6 +36,7 @@ def http_get(url: str, params=None, headers: dict = None, timeout=5):
         if url is None or not url.startswith('http'):
             raise Exception('url不合法')
         parsed_url = urlparse(url)
+        headers = headers or {}
         # 添加固定header
         headers['Referer'] = parsed_url.scheme + '://' + parsed_url.netloc
         headers['User-Agent'] = fake_ua()
@@ -65,6 +66,7 @@ def http_post(url: str, data=None, headers: dict = None, timeout=5):
         if url is None or not url.startswith('http'):
             raise Exception('url不合法')
         parsed_url = urlparse(url)
+        headers = headers or {}
         # 添加固定header
         headers['Referer'] = parsed_url.scheme + '://' + parsed_url.netloc
         headers['User-Agent'] = fake_ua()

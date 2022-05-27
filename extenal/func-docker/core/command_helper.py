@@ -7,14 +7,26 @@
 @File     : helper.py
 @Desc     : 命令解析
 """
-from model.command import Command
-from command.functions import Functions as func
-from util.logging import Logger
+from .functions import Functions as func
+from .log import Logger
 
-logger = Logger('CommandHelper').get_logger()
+logger = Logger(__name__).get_logger()
+
+
+class Command(object):
+
+    def __init__(self, cmd: str, args):
+        self.cmd = cmd
+        self.args = args
+
+    def __str__(self):
+        return '{"cmd": "%s", "args": "%s"}' % (self.cmd, self.args)
 
 
 class CommandHelper(object):
+
+    def __init__(self):
+        pass
 
     def execute(self, source: object, pattern: str):
         """
