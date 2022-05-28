@@ -15,6 +15,7 @@ import time
 
 LOG_PATH = os.environ.get('PROXY_LOG_PATH', './logs')
 LOG_LEVEL = os.environ.get('PROXY_LOG_LEVEL', 'INFO')
+LOG_FILE_ENABLED = os.environ.get('PROXY_LOG_FILE_ENABLED', 'True') == 'True'
 
 
 class Logger(object):
@@ -38,15 +39,17 @@ class Logger(object):
 
         # 文件日志
 
-        if not os.path.exists(LOG_PATH) and not os.path.isdir(LOG_PATH):
-            os.mkdir(LOG_PATH)
+        if LOG_FILE_ENABLED:
 
-        log_file_name = 'mef-%s.log' % (self._today_data())
-        log_file_path = os.path.join(LOG_PATH, log_file_name)
-        file_handler = logging.handlers.TimedRotatingFileHandler(log_file_path, when='D', interval=1, backupCount=7)
-        file_handler.setLevel(LOG_LEVEL)
-        file_handler.setFormatter(self.formatter)
-        self.logger.addHandler(file_handler)
+            if not os.path.exists(LOG_PATH) and not os.path.isdir(LOG_PATH):
+                os.mkdir(LOG_PATH)
+
+            log_file_name = 'mef-%s.log' % (self._today_data())
+            log_file_path = os.path.join(LOG_PATH, log_file_name)
+            file_handler = logging.handlers.TimedRotatingFileHandler(log_file_path, when='D', interval=1, backupCount=7)
+            file_handler.setLevel(LOG_LEVEL)
+            file_handler.setFormatter(self.formatter)
+            self.logger.addHandler(file_handler)
 
     def get_handler(self):
         return self.logger.handlers
