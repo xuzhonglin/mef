@@ -104,6 +104,11 @@ def player_proxy_handler():
     url = request.path.replace('/proxy/player/', '')
     if not url.startswith('http'):
         url = 'https://' + url
+    elif url.startswith('https:'):
+        url = re.sub(r'http[s]?:[\/]+', 'https://', url)
+    elif url.startswith('http:'):
+        url = re.sub(r'http[s]?:[\/]+', 'https://', url)
+
     headers = _unpack_headers(request.headers)
     parse_result = urlparse(url)
     headers["Host"] = parse_result.netloc
